@@ -3,9 +3,8 @@ import {
   signup,
   login,
   logout,
-  onboarding,
+  refreshToken,
 } from "../controller/auth.controller.js";
-
 
 import { protectRoute } from "../middleware/auth.middleware.js";
 
@@ -17,10 +16,8 @@ router.post("/login", login);
 
 router.post("/logout", logout);
 
-router.post("/onboarding", protectRoute, onboarding);
+router.post("/refresh-token", refreshToken);
 
-router.get("/me", protectRoute, (req, res) => {
-  res.status(200).json({ success: true, user: req.user });
-});
+//router.get("/profile", getProfile);
 
 export default router;

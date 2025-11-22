@@ -5,51 +5,41 @@ const userSchema = new mongoose.Schema(
   {
     fullName: {
       type: String,
-      required: true,
+      required: [true, "Name is required"],
     },
     email: {
       type: String,
-      required: true,
+      required: [true, "Email is required"],
       unique: true,
+      lowercase: true,
+      trim: true,
     },
     password: {
       type: String,
-      required: true,
-      minlength: 6,
+      required: [true, "password is required"],
+      minlength: [6, "Password must be at least 6 characters long"],
     },
-    bio: {
-      type: String,
-      default: "",
-    },
-    profilePic: {
-      type: String,
-      default: "",
-    },
-    nativeLanguage: {
-      type: String,
-      default: "",
-    },
-    learningLanguage: {
-      type: String,
-      default: "",
-    },
-    location: {
-      type: String,
-      default: "",
-    },
-    isOnboarded: {
-      type: Boolean,
-      default: false,
-    },
-    friends: [
+    cartItems: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        quantity: {
+          type: Number,
+          default: 1,
+        },
+        product: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Product",
+        },
       },
     ],
+    role: {
+      type: String,
+      enum: ["customer", "admin"],
+      default: "customer",
+    },
   },
   { timestamps: true }
 );
+
 
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
@@ -64,13 +54,16 @@ userSchema.pre("save", async function (next) {
   }
 });
 
-userSchema.methods.matchPassword = async function (enteredPassword) {
+userSchema.methods.comparePassword = async function (enteredPassword) {
   const isPasswordCorrect = await bcrypt.compare(
     enteredPassword,
     this.password
   );
   return isPasswordCorrect;
 };
+
+
+
 const User = mongoose.model("User", userSchema);
 
 export default User;

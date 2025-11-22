@@ -2,16 +2,20 @@
   "name": "ecommerce",
   "version": "1.0.0",
   "description": "",
-  "main": "backend/server.js",
+  "main": "dist/backend/server.js",
+  "type": "module",
   "scripts": {
-    "dev": "nodemon backend/server.js",
-    "start": "node backend/server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "tsx watch backend/server.ts",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build": "npm run build:backend && npm run build:frontend",
+    "build:backend": "tsc -p backend/tsconfig.json",
+    "build:frontend": "cd frontend && npm run build",
+    "start": "node dist/backend/server.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "module",
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "cloudinary": "^2.8.0",
@@ -25,12 +29,12 @@
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
-    "@types/cookie-parser": "^1.4.10",
-    "@types/express": "^5.0.5",
-    "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^24.10.1",
-    "nodemon": "^3.1.11",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+    "@types/cookie-parser": "^1.4.7",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/node": "^20.11.0",
+    "concurrently": "^8.2.2",
+    "tsx": "^4.20.6",
+    "typescript": "^5.3.3"
   }
 }
