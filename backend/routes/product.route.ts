@@ -1,7 +1,8 @@
 import { adminRoute, protectRoute } from "../middleware/auth.middleware";
+import express from "express";
 import { createProduct, getAllProducts, getFeaturedProducts , deleteProduct ,getRecommendedProducts,getProductsByCategory ,toggleFeaturedProduct} from "../controller/product.controller";
 
-const router = export.Router();
+const router = express.Router();
 
 router.get("/",protectRoute,adminRoute,getAllProducts);
 router.get("/featured",getFeaturedProducts);
