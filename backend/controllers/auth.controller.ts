@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { authService } from '../services/auth.service';
 import { asyncHandler } from '../utils/asyncHandler';
 import { setCookies, setAccessTokenCookie, clearCookies } from '../utils/cookies';
+import { tokenService } from '../services/token.service';
 
 /**
  * @desc    Register new user
@@ -54,9 +55,7 @@ export const logout = asyncHandler(
 
     if (refreshToken) {
       try {
-        // Verify and extract userId from refresh token
-        const { tokenService } = await import('../services/token.service');
-        const decoded = tokenService.verifyRefreshToken(refreshToken);
+          const decoded = tokenService.verifyRefreshToken(refreshToken);
         await authService.logout(decoded.userId);
       } catch (error) {
         console.error('Error during logout:', error);
@@ -71,6 +70,7 @@ export const logout = asyncHandler(
     });
   }
 );
+
 
 /**
  * @desc    Refresh access token

@@ -96,12 +96,6 @@ userSchema.methods.comparePassword = async function (
   }
 };
 
-userSchema.methods.toJSON = function () {
-  const user = this.toObject();
-  delete user.password;
-  return user;
-};
-
 const User = mongoose.model<IUserDocument>('User', userSchema);
 
 export default User;
