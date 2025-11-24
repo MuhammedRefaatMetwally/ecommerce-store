@@ -1,54 +1,54 @@
-import jwt from "jsonwebtoken";
-import User from "../models/user.model.js";
+import { Request, Response, NextFunction } from 'express';
+import { tokenService } from '../services/token.service';
+import User from '../models/user.model';
+import { AppError } from '../utils/appError';
+import { asyncHandler } from '../utils/asyncHandler';
+import { UserRole } from '../types/auth.types';
 
-export const protectRoute = async (req, res, next) => {
-  try {
+
+export const protectRoute = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
     const token = req.cookies.accessToken;
 
     if (!token) {
-      return res
-        .status(401)
-        .json({ message: "Unauthorized - No token provided" });
+      throw new AppError('Unauthorized - No access token provided', 401);
     }
 
-    try {
-      const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    const decoded = tokenService.verifyAccessToken(token);
 
-      if (!decoded) {
-        return res
-          .status(401)
-          .json({ message: "Unauthorized - Invalid token" });
-      }
+    const user = await User.findById(decoded.userId);
 
-      const user = await User.findById(decoded.userId).select("-password");
-
-      if (!user) {
-        return res
-          .status(401)
-          .json({ message: "Unauthorized - User not found" });
-      }
-
-      req.user = user;
-
-      next();
-    } catch (error) {
-      if (error == "TokenExpiredError") {
-        return res
-          .status(401)
-          .json({ message: "Unauthorized - Access Token expired" });
-      }
-      throw error;
+    if (!user) {
+      throw new AppError('Unauthorized - User not found', 401);
     }
-  } catch (error) {
-    console.log("Error in protectRoute middleware", error);
-    res.status(500).json({ message: "Internal Server Error" });
+
+    req.user = user;
+
+    next();
   }
+);
+
+
+export const adminRoute = (req: Request, res: Response, next: NextFunction) => {
+  if (!req.user) {
+    throw new AppError('Unauthorized - Authentication required', 401);
+  }
+
+  if (req.user.role !== UserRole.ADMIN) {
+    throw new AppError('Forbidden - Admin access required', 403);
+  }
+
+  next();
 };
 
-export const adminRoute = (req, res, next) => {
-  if (req.user && req.user.role == "admin") {
-    next();
-  } else {
-    return res.status(403).json({ message: "Access denied - Admin Only" });
+export const customerRoute = (req: Request, res: Response, next: NextFunction) => {
+  if (!req.user) {
+    throw new AppError('Unauthorized - Authentication required', 401);
   }
+
+  if (req.user.role !== UserRole.CUSTOMER && req.user.role !== UserRole.ADMIN) {
+    throw new AppError('Forbidden - Customer or Admin access required', 403);
+  }
+
+  next();
 };

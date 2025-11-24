@@ -1,23 +1,67 @@
-import express from "express";
+import { Router } from 'express';
 import {
   signup,
   login,
   logout,
   refreshToken,
-} from "../controllers/auth.controller.js";
+  getProfile,
+  updateProfile,
+  changePassword
+} from '../controllers/auth.controller';
+import { protectRoute } from '../middleware/auth.middleware';
+import { validate } from '../middleware/validation.middleware';
+import {
+  signupSchema,
+  loginSchema,
+  updateProfileSchema,
+  changePasswordSchema
+} from '../validators/auth.validator';
 
-import { protectRoute } from "../middleware/auth.middleware.js";
+const router = Router();
 
-const router = express.Router();
+// Public routes
+router.post(
+  '/signup',
+  validate(signupSchema, 'body'),
+  signup
+);
 
-router.post("/signup", signup);
+router.post(
+  '/login',
+  validate(loginSchema, 'body'),
+  login
+);
 
-router.post("/login", login);
+router.post(
+  '/refresh-token',
+  refreshToken
+);
 
-router.post("/logout", logout);
+// Protected routes
+router.post(
+  '/logout',
+  protectRoute,
+  logout
+);
 
-router.post("/refresh-token", refreshToken);
+router.get(
+  '/profile',
+  protectRoute,
+  getProfile
+);
 
-//router.get("/profile", getProfile);
+router.put(
+  '/profile',
+  protectRoute,
+  validate(updateProfileSchema, 'body'),
+  updateProfile
+);
+
+router.post(
+  '/change-password',
+  protectRoute,
+  validate(changePasswordSchema, 'body'),
+  changePassword
+);
 
 export default router;

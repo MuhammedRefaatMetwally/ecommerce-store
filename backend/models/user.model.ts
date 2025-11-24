@@ -1,69 +1,107 @@
-import mongoose from "mongoose";
-import bcrypt from "bcryptjs";
+import mongoose, { Schema } from 'mongoose';
+import bcrypt from 'bcryptjs';
+import { IUserDocument, UserRole } from '../types/auth.types';
 
-const userSchema = new mongoose.Schema(
+const userSchema = new Schema<IUserDocument>(
   {
     fullName: {
       type: String,
-      required: [true, "Name is required"],
+      required: [true, 'Full name is required'],
+      trim: true,
+      minlength: [2, 'Full name must be at least 2 characters'],
+      maxlength: [50, 'Full name cannot exceed 50 characters']
     },
     email: {
       type: String,
-      required: [true, "Email is required"],
+      required: [true, 'Email is required'],
       unique: true,
       lowercase: true,
       trim: true,
+      index: true,
+      validate: {
+        validator: (value: string) => {
+          return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+        },
+        message: 'Invalid email format'
+      }
     },
     password: {
       type: String,
-      required: [true, "password is required"],
-      minlength: [6, "Password must be at least 6 characters long"],
+      required: [true, 'Password is required'],
+      minlength: [6, 'Password must be at least 6 characters'],
+      select: false 
     },
     cartItems: [
       {
+        product: {
+          type: Schema.Types.ObjectId,
+          ref: 'Product',
+          required: true
+        },
         quantity: {
           type: Number,
-          default: 1,
-        },
-        product: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Product",
-        },
-      },
+          required: true,
+          min: [1, 'Quantity must be at least 1'],
+          default: 1
+        }
+      }
     ],
     role: {
       type: String,
-      enum: ["customer", "admin"],
-      default: "customer",
-    },
+      enum: {
+        values: Object.values(UserRole),
+        message: '{VALUE} is not a valid role'
+      },
+      default: UserRole.CUSTOMER
+    }
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+    toJSON: {
+      transform: (_doc, ret) => {
+        ret.id = ret._id;
+        delete ret._id;
+        delete ret.__v;
+        delete ret.password;
+        return ret;
+      }
+    }
+  }
 );
 
+userSchema.index({ email: 1 });
 
-userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
+userSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) {
+    return next();
+  }
 
   try {
-    const salt = await bcrypt.genSalt(10);
+    const salt = await bcrypt.genSalt(12); // Increased salt rounds for better security
     this.password = await bcrypt.hash(this.password, salt);
     next();
   } catch (error) {
-    console.error("Error hashing password:", error);
-    next(error);
+    next(error as Error);
   }
 });
 
-userSchema.methods.comparePassword = async function (enteredPassword) {
-  const isPasswordCorrect = await bcrypt.compare(
-    enteredPassword,
-    this.password
-  );
-  return isPasswordCorrect;
+userSchema.methods.comparePassword = async function (
+  enteredPassword: string
+): Promise<boolean> {
+  try {
+    return await bcrypt.compare(enteredPassword, this.password);
+  } catch (error) {
+    console.error('Error comparing passwords:', error);
+    return false;
+  }
 };
 
+userSchema.methods.toJSON = function () {
+  const user = this.toObject();
+  delete user.password;
+  return user;
+};
 
-
-const User = mongoose.model("User", userSchema);
+const User = mongoose.model<IUserDocument>('User', userSchema);
 
 export default User;
