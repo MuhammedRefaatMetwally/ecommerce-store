@@ -4,7 +4,7 @@ import {
   login,
   logout,
   refreshToken,
-} from "../controller/auth.controller.js";
+} from "../controllers/auth.controller.js";
 
 import { protectRoute } from "../middleware/auth.middleware.js";
 
