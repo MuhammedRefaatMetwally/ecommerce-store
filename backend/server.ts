@@ -6,6 +6,8 @@ import compression from "compression";
 import "dotenv/config";
 import authRoutes from "./routes/auth.route";
 import productRoutes from "./routes/product.route";
+import cartRoutes from "./routes/cart.route";
+import couponRoutes from "./routes/coupon.route";
 import { errorHandler, notFound } from "./middleware/errorHandler.middleware";
 import { connectDB } from "./lib/db";
 
@@ -16,7 +18,7 @@ app.use(helmet());
 app.use(
   cors({
     origin: process.env.CORS_ORIGIN || "http://localhost:3000",
-    credentials: true, // Allow cookies
+    credentials: true, 
   })
 );
 
@@ -36,6 +38,8 @@ app.get("/health", (req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
+app.use("/api/cart", cartRoutes);
+app.use("/api/coupon", couponRoutes);
 
 app.use(notFound);
 
@@ -54,26 +58,6 @@ const startServer = async () => {
     process.exit(1);
   }
 };
-
-// Catch unhandled promise rejections (missing .catch()) and shut down safely
-process.on("unhandledRejection", (err: Error) => {
-  console.error("UNHANDLED REJECTION! 💥 Shutting down...");
-  console.error(err.name, err.message);
-  process.exit(1); 
-});
-
-// Catch errors not wrapped in try/catch and shut down safely
-process.on("uncaughtException", (err: Error) => {
-  console.error("UNCAUGHT EXCEPTION!  Shutting down...");
-  console.error(err.name, err.message);
-  process.exit(1); 
-});
-
-// Handle graceful shutdown (e.g., from Docker, AWS, or system stop)
-process.on("SIGTERM", () => {
-  console.log(" SIGTERM received. Shutting down gracefully...");
-  process.exit(0); 
-});
 
 startServer();
 
