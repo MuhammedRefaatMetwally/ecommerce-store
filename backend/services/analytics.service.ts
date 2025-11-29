@@ -136,7 +136,12 @@ export class AnalyticsService {
       stock: { $lte: 0 },
     });
     const discountData = await Order.aggregate([
-      { $match: { $match: { discountAmount: { $gt: 0 }, status: OrderStatus.COMPLETED } } },
+      {
+        $match: {
+          discountAmount: { $gt: 0 },
+          status: OrderStatus.COMPLETED,
+        },
+      },
       {
         $group: {
           _id: null,
@@ -259,36 +264,38 @@ export class AnalyticsService {
 
   async getRevenueByCategory(): Promise<IRevenueByCategory[]> {
     const categoryData = await Order.aggregate([
-  { $match: { status: OrderStatus.COMPLETED } },
-  { $unwind: "$products" },
-  {
-    $lookup: {
-      from: "products",
-      localField: "products.product",
-      foreignField: "_id",
-      as: "productInfo",
-    },
-  },
-  { $unwind: "$productInfo" },
+      { $match: { status: OrderStatus.COMPLETED } },
+      { $unwind: "$products" },
+      {
+        $lookup: {
+          from: "products",
+          localField: "products.product",
+          foreignField: "_id",
+          as: "productInfo",
+        },
+      },
+      { $unwind: "$productInfo" },
 
-  // group by category + orderId to deduplicate orders per category
-  {
-    $group: {
-      _id: { category: "$productInfo.category", orderId: "$_id" },
-      revenue: { $sum: { $multiply: ["$products.price", "$products.quantity"] } },
-    },
-  },
+      // group by category + orderId to deduplicate orders per category
+      {
+        $group: {
+          _id: { category: "$productInfo.category", orderId: "$_id" },
+          revenue: {
+            $sum: { $multiply: ["$products.price", "$products.quantity"] },
+          },
+        },
+      },
 
-  // group by category to sum revenue and count distinct orders
-  {
-    $group: {
-      _id: "$_id.category",
-      revenue: { $sum: "$revenue" },
-      orders: { $sum: 1 }, 
-    },
-  },
-  { $sort: { revenue: -1 } },
-]);
+      // group by category to sum revenue and count distinct orders
+      {
+        $group: {
+          _id: "$_id.category",
+          revenue: { $sum: "$revenue" },
+          orders: { $sum: 1 },
+        },
+      },
+      { $sort: { revenue: -1 } },
+    ]);
 
     const totalRevenue = categoryData.reduce(
       (sum, cat) => sum + cat.revenue,
@@ -353,7 +360,11 @@ export class AnalyticsService {
 
   async clearCache(): Promise<void> {
     try {
-      await redis.del(this.ANALYTICS_CACHE_KEY);
+      const pattern = `${this.ANALYTICS_CACHE_KEY}:*`;
+      const keys = await redis.keys(pattern);
+      if (keys.length > 0) {
+        await redis.del(...keys);
+      }
     } catch (error) {
       console.error("Error clearing analytics cache:", error);
     }
