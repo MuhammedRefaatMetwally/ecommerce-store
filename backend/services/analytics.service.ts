@@ -12,15 +12,23 @@ import {
 } from "../types/analytics.types";
 import { OrderStatus } from "../types/order.types";
 
-const ANALYTICS_CACHE_KEY = "analytics:overview";
-const CACHE_TTL = 300;
-
 export class AnalyticsService {
+  ANALYTICS_CACHE_KEY = "analytics:overview";
+
+  private buildCacheKey(startDate: Date, endDate: Date): string {
+    const start = startDate.toISOString().split("T")[0];
+    const end = endDate.toISOString().split("T")[0];
+    return `${this.ANALYTICS_CACHE_KEY}:${start}:${end}`;
+  }
+
+  CACHE_TTL = 300;
+
   async getAnalyticsOverview(
     startDate: Date,
     endDate: Date
   ): Promise<IAnalyticsResponse> {
-    const cached = await this.getCachedAnalytics();
+    const cacheKey = this.buildCacheKey(startDate, endDate);
+    const cached = await this.getCachedAnalytics(cacheKey);
     if (cached) {
       return cached;
     }
@@ -40,7 +48,7 @@ export class AnalyticsService {
       revenueByCategory,
     };
 
-    await this.cacheAnalytics(result);
+    await this.cacheAnalytics(cacheKey, result);
 
     return result;
   }
@@ -124,9 +132,11 @@ export class AnalyticsService {
 
     const activeCoupons = await Coupon.countDocuments({ isActive: true });
     const usedCoupons = await Coupon.countDocuments({ usedCount: { $gt: 0 } });
-
+    const outOfStockProducts = await Product.countDocuments({
+      stock: { $lte: 0 },
+    });
     const discountData = await Order.aggregate([
-      { $match: { discountAmount: { $gt: 0 } } },
+      { $match: { $match: { discountAmount: { $gt: 0 }, status: OrderStatus.COMPLETED } } },
       {
         $group: {
           _id: null,
@@ -144,7 +154,7 @@ export class AnalyticsService {
       products: {
         total: totalProducts,
         featured: featuredProducts,
-        outOfStock: 0,
+        outOfStock: outOfStockProducts,
       },
       sales: {
         totalOrders,
@@ -249,28 +259,36 @@ export class AnalyticsService {
 
   async getRevenueByCategory(): Promise<IRevenueByCategory[]> {
     const categoryData = await Order.aggregate([
-      { $match: { status: OrderStatus.COMPLETED } },
-      { $unwind: "$products" },
-      {
-        $lookup: {
-          from: "products",
-          localField: "products.product",
-          foreignField: "_id",
-          as: "productInfo",
-        },
-      },
-      { $unwind: "$productInfo" },
-      {
-        $group: {
-          _id: "$productInfo.category",
-          revenue: {
-            $sum: { $multiply: ["$products.price", "$products.quantity"] },
-          },
-          orders: { $sum: 1 },
-        },
-      },
-      { $sort: { revenue: -1 } },
-    ]);
+  { $match: { status: OrderStatus.COMPLETED } },
+  { $unwind: "$products" },
+  {
+    $lookup: {
+      from: "products",
+      localField: "products.product",
+      foreignField: "_id",
+      as: "productInfo",
+    },
+  },
+  { $unwind: "$productInfo" },
+
+  // group by category + orderId to deduplicate orders per category
+  {
+    $group: {
+      _id: { category: "$productInfo.category", orderId: "$_id" },
+      revenue: { $sum: { $multiply: ["$products.price", "$products.quantity"] } },
+    },
+  },
+
+  // group by category to sum revenue and count distinct orders
+  {
+    $group: {
+      _id: "$_id.category",
+      revenue: { $sum: "$revenue" },
+      orders: { $sum: 1 }, 
+    },
+  },
+  { $sort: { revenue: -1 } },
+]);
 
     const totalRevenue = categoryData.reduce(
       (sum, cat) => sum + cat.revenue,
@@ -310,22 +328,22 @@ export class AnalyticsService {
     return new Date(now.getFullYear(), now.getMonth() - 1, 1);
   }
 
-  private async cacheAnalytics(data: IAnalyticsResponse): Promise<void> {
+  private async cacheAnalytics(
+    key: string,
+    data: IAnalyticsResponse
+  ): Promise<void> {
     try {
-      await redis.set(
-        ANALYTICS_CACHE_KEY,
-        JSON.stringify(data),
-        "EX",
-        CACHE_TTL
-      );
+      await redis.set(key, JSON.stringify(data), "EX", this.CACHE_TTL);
     } catch (error) {
       console.error("Error caching analytics:", error);
     }
   }
 
-  private async getCachedAnalytics(): Promise<IAnalyticsResponse | null> {
+  private async getCachedAnalytics(
+    key: string
+  ): Promise<IAnalyticsResponse | null> {
     try {
-      const cached = await redis.get(ANALYTICS_CACHE_KEY);
+      const cached = await redis.get(key);
       return cached ? JSON.parse(cached) : null;
     } catch (error) {
       console.error("Error getting cached analytics:", error);
@@ -335,7 +353,7 @@ export class AnalyticsService {
 
   async clearCache(): Promise<void> {
     try {
-      await redis.del(ANALYTICS_CACHE_KEY);
+      await redis.del(this.ANALYTICS_CACHE_KEY);
     } catch (error) {
       console.error("Error clearing analytics cache:", error);
     }
