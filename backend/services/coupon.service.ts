@@ -159,6 +159,7 @@ export class CouponService {
     couponData: Omit<ICreateCouponDTO, 'userId' | 'code'>,
     codePrefix: string = 'PROMO'
   ): Promise<ICouponResponse[]> {
+    
     const coupons: ICouponResponse[] = [];
 
     for (const userId of userIds) {

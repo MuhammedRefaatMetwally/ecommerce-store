@@ -7,6 +7,7 @@ import "dotenv/config";
 import authRoutes from "./routes/auth.route";
 import productRoutes from "./routes/product.route";
 import cartRoutes from "./routes/cart.route";
+import paymentsRoutes from "./routes/payment.route";
 import couponRoutes from "./routes/coupon.route";
 import { errorHandler, notFound } from "./middleware/errorHandler.middleware";
 import { connectDB } from "./lib/db";
@@ -40,6 +41,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/coupon", couponRoutes);
+app.use("/api/payments", paymentsRoutes);
 
 app.use(notFound);
 
