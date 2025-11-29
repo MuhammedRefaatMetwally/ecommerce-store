@@ -1,6 +1,6 @@
-import { Request, Response, NextFunction } from 'express';
-import { cartService } from '../services/cart.service';
-import { asyncHandler } from '../utils/asyncHandler';
+import { Request, Response, NextFunction } from "express";
+import { cartService } from "../services/cart.service";
+import { asyncHandler } from "../utils/asyncHandler";
 
 /**
  * @desc    Get user's cart
@@ -13,7 +13,7 @@ export const getCart = asyncHandler(
 
     res.status(200).json({
       success: true,
-      data: cart
+      data: cart,
     });
   }
 );
@@ -30,13 +30,13 @@ export const addToCart = asyncHandler(
     const cart = await cartService.addToCart(
       req.user!._id.toString(),
       productId,
-      quantity || 1
+      quantity ?? 1
     );
 
     res.status(200).json({
       success: true,
-      message: 'Product added to cart successfully',
-      data: cart
+      message: "Product added to cart successfully",
+      data: cart,
     });
   }
 );
@@ -59,10 +59,11 @@ export const updateCartItemQuantity = asyncHandler(
 
     res.status(200).json({
       success: true,
-      message: quantity === 0 
-        ? 'Product removed from cart'
-        : 'Cart updated successfully',
-      data: cart
+      message:
+        quantity === 0
+          ? "Product removed from cart"
+          : "Cart updated successfully",
+      data: cart,
     });
   }
 );
@@ -83,8 +84,8 @@ export const removeFromCart = asyncHandler(
 
     res.status(200).json({
       success: true,
-      message: 'Product removed from cart successfully',
-      data: cart
+      message: "Product removed from cart successfully",
+      data: cart,
     });
   }
 );
@@ -100,14 +101,14 @@ export const clearCart = asyncHandler(
 
     res.status(200).json({
       success: true,
-      message: 'Cart cleared successfully',
+      message: "Cart cleared successfully",
       data: {
         items: [],
         totalItems: 0,
         subtotal: 0,
         tax: 0,
-        total: 0
-      }
+        total: 0,
+      },
     });
   }
 );
@@ -123,7 +124,7 @@ export const validateCart = asyncHandler(
 
     res.status(200).json({
       success: true,
-      data: validation
+      data: validation,
     });
   }
 );
