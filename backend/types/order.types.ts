@@ -10,7 +10,7 @@ export interface IOrder {
   user: string;
   products: IOrderItem[];
   totalAmount: number;
-  stripeSessionId: string;
+  stripeSessionId?: string;
   couponCode?: string;
   discountAmount?: number;
   status: OrderStatus;
