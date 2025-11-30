@@ -6,15 +6,15 @@ import {
   getOrderById,
   getAllOrders,
   updateOrderStatus,
-} from '../controllers/payment.controller';
-import { protectRoute, adminRoute } from '../middleware/auth.middleware';
-import { validate } from '../middleware/validation.middleware';
+} from '../controllers/payment.controller.js';
+import { protectRoute, adminRoute } from '../middleware/auth.middleware.js';
+import { validate } from '../middleware/validation.middleware.js';
 import {
   createCheckoutSchema,
   checkoutSuccessSchema,
   orderIdSchema,
   updateOrderStatusSchema,
-} from '../validators/payment.validator';
+} from '../validators/payment.validator.js';
 
 const router = Router();
 
