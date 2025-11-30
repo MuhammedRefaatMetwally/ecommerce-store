@@ -1,17 +1,17 @@
 {
-  "name": "ecommerce",
+  "name": "e-commerce",
   "version": "1.0.0",
-  "description": "",
+  "description": "An e-commerce backend with express js",
   "main": "dist/backend/server.js",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
-    "dev:backend": "tsx watch backend/server.ts",
-    "dev:frontend": "cd frontend && npm run dev",
-    "build": "npm run build:backend && npm run build:frontend",
-    "build:backend": "tsc -p backend/tsconfig.json",
-    "build:frontend": "cd frontend && npm run build",
-    "start": "node dist/backend/server.js"
+    "dev": "tsx watch server.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "keywords": [],
   "author": "",
@@ -32,7 +32,9 @@
     "joi": "^18.0.2",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^9.0.0",
-    "stripe": "^20.0.0"
+    "morgan": "^1.10.1",
+    "stripe": "^20.0.0",
+    "winston": "^3.18.3"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -41,6 +43,7 @@
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/jsonwebtoken": "^9.0.6",
+    "@types/morgan": "^1.9.10",
     "@types/node": "^20.11.0",
     "@typescript-eslint/eslint-plugin": "^6.13.2",
     "@typescript-eslint/parser": "^6.13.2",
