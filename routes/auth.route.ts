@@ -176,7 +176,9 @@ router.post('/login', validate(loginSchema, 'body'), login);
  *                 value:
  *                   success: false
  *                   status: fail
- *                   message: Refresh token expired*/
+ *                   message: Refresh token expired
+ * 
+ * */
 router.post('/refresh-token', refreshToken);
 
 /**
@@ -295,7 +297,9 @@ router.get('/profile', protectRoute, getProfile);
  *                 - field: fullName
  *                   message: Full name must be at least 2 characters
  *       401:
- *         description: Unauthorized - No access token*/
+ *         description: Unauthorized - No access token
+ * 
+ * */
 router.put(
   '/profile',
   protectRoute,
