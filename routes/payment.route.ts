@@ -34,8 +34,7 @@ router.use(protectRoute);
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - products
+ *             required: [products]
  *             properties:
  *               products:
  *                 type: array
@@ -58,31 +57,6 @@ router.use(protectRoute);
  *     responses:
  *       200:
  *         description: Checkout session created
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 data:
- *                   type: object
- *                   properties:
- *                     sessionId:
- *                       type: string
- *                     url:
- *                       type: string
- *                       description: Stripe checkout URL
- *                     subtotal:
- *                       type: number
- *                     discount:
- *                       type: number
- *                     tax:
- *                       type: number
- *                     total:
- *                       type: number
- *       400:
- *         description: Invalid products or coupon
  */
 router.post(
   '/create-checkout-session',
@@ -104,33 +78,13 @@ router.post(
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - sessionId
+ *             required: [sessionId]
  *             properties:
  *               sessionId:
  *                 type: string
- *                 description: Stripe session ID
  *     responses:
  *       200:
  *         description: Order created successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *                 data:
- *                   type: object
- *                   properties:
- *                     orderId:
- *                       type: string
- *                     totalAmount:
- *                       type: number
- *                     status:
- *                       type: string
  */
 router.post(
   '/checkout-success',
@@ -149,19 +103,6 @@ router.post(
  *     responses:
  *       200:
  *         description: List of user's orders
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 count:
- *                   type: number
- *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Order'
  */
 router.get('/orders', getUserOrders);
 
@@ -176,8 +117,6 @@ router.get('/orders', getUserOrders);
  *     responses:
  *       200:
  *         description: List of all orders
- *       403:
- *         description: Admin access required
  */
 router.get('/orders/all', adminRoute, getAllOrders);
 
@@ -198,8 +137,6 @@ router.get('/orders/all', adminRoute, getAllOrders);
  *     responses:
  *       200:
  *         description: Order details
- *       404:
- *         description: Order not found
  */
 router.get('/orders/:id', validate(orderIdSchema, 'params'), getOrderById);
 
@@ -223,8 +160,7 @@ router.get('/orders/:id', validate(orderIdSchema, 'params'), getOrderById);
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - status
+ *             required: [status]
  *             properties:
  *               status:
  *                 type: string
@@ -232,8 +168,6 @@ router.get('/orders/:id', validate(orderIdSchema, 'params'), getOrderById);
  *     responses:
  *       200:
  *         description: Order status updated
- *       403:
- *         description: Admin access required
  */
 router.patch(
   '/orders/:id/status',

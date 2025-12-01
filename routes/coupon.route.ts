@@ -34,56 +34,6 @@ router.use(protectRoute);
  *     responses:
  *       200:
  *         description: Active coupon or null
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 data:
- *                   $ref: '#/components/schemas/Coupon'
- *   post:
- *     summary: Create coupon (Admin only)
- *     tags: [Coupons]
- *     security:
- *       - cookieAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - code
- *               - discountPercentage
- *               - expirationDate
- *               - userId
- *             properties:
- *               code:
- *                 type: string
- *                 example: SAVE20
- *               discountPercentage:
- *                 type: number
- *                 minimum: 0
- *                 maximum: 100
- *                 example: 20
- *               expirationDate:
- *                 type: string
- *                 format: date-time
- *               userId:
- *                 type: string
- *               usageLimit:
- *                 type: number
- *                 minimum: 1
- *               minimumPurchase:
- *                 type: number
- *                 minimum: 0
- *     responses:
- *       201:
- *         description: Coupon created
- *       403:
- *         description: Admin access required
  */
 router.get('/', getUserCoupon);
 
@@ -97,7 +47,8 @@ router.get('/', getUserCoupon);
  *       - cookieAuth: []
  *     responses:
  *       200:
- *     */
+ *         description: List of user's coupons
+ */
 router.get('/my-coupons', getAllUserCoupons);
 
 /**
@@ -114,8 +65,7 @@ router.get('/my-coupons', getAllUserCoupons);
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - code
+ *             required: [code]
  *             properties:
  *               code:
  *                 type: string
@@ -126,32 +76,9 @@ router.get('/my-coupons', getAllUserCoupons);
  *     responses:
  *       200:
  *         description: Coupon is valid
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *                 data:
- *                   type: object
- *                   properties:
- *                     code:
- *                       type: string
- *                     discountPercentage:
- *                       type: number
- *                     discountAmount:
- *                       type: number
- *       400:
- *         description: Invalid coupon
  */
-router.post(
-  '/validate',
-  validate(validateCouponSchema, 'body'),
-  validateCoupon
-);
+router.post('/validate', validate(validateCouponSchema, 'body'), validateCoupon);
+
 /**
  * @swagger
  * /api/coupons/all:
@@ -162,44 +89,8 @@ router.post(
  *       - cookieAuth: []
  *     responses:
  *       200:
- *         description: List of all coupons with user details
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 count:
- *                   type: number
- *                   example: 50
- *                 data:
- *                   type: array
- *                   items:
- *                     allOf:
- *                       - $ref: '#/components/schemas/Coupon'
- *                       - type: object
- *                         properties:
- *                           user:
- *                             type: object
- *                             properties:
- *                               fullName:
- *                                 type: string
- *                               email:
- *                                 type: string
- *             example:
- *               success: true
- *               count: 2
- *               data:
- *                 - id: "507f1f77bcf86cd799439011"
- *                   code: "SAVE20"
- *                   discountPercentage: 20
- *                   user:
- *                     fullName: "John Doe"
- *                     email: "john@example.com"
- *       403:
- *         description: Admin access required*/
+ *         description: List of all coupons
+ */
 router.get('/all', adminRoute, getAllCoupons);
 
 /**
@@ -216,77 +107,26 @@ router.get('/all', adminRoute, getAllCoupons);
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - code
- *               - discountPercentage
- *               - expirationDate
- *               - userId
+ *             required: [code, discountPercentage, expirationDate, userId]
  *             properties:
  *               code:
  *                 type: string
- *                 pattern: '^[A-Z0-9]+$'
- *                 minLength: 3
- *                 maxLength: 20
- *                 example: SAVE20
- *                 description: Coupon code (uppercase letters and numbers only)
  *               discountPercentage:
  *                 type: number
- *                 minimum: 0
- *                 maximum: 100
- *                 example: 20
- *                 description: Discount percentage (0-100)
  *               expirationDate:
  *                 type: string
  *                 format: date-time
- *                 example: "2024-12-31T23:59:59Z"
- *                 description: Must be in the future
  *               userId:
  *                 type: string
- *                 pattern: '^[0-9a-fA-F]{24}$'
- *                 example: 507f1f77bcf86cd799439011
- *                 description: User MongoDB ObjectId
  *               usageLimit:
  *                 type: integer
- *                 minimum: 1
- *                 example: 5
- *                 description: Maximum number of times coupon can be used
  *               minimumPurchase:
  *                 type: number
- *                 minimum: 0
- *                 example: 50
- *                 description: Minimum purchase amount required
- *           examples:
- *             welcome:
- *               summary: Welcome coupon (one-time use)
- *               value:
- *                 code: "WELCOME50"
- *                 discountPercentage: 50
- *                 expirationDate: "2024-12-31T23:59:59Z"
- *                 userId: "507f1f77bcf86cd799439011"
- *                 usageLimit: 1
- *                 minimumPurchase: 0
- *             loyalty:
- *               summary: Loyalty reward (multiple uses)
- *               value:
- *                 code: "VIP20"
- *                 discountPercentage: 20
- *                 expirationDate: "2024-12-31T23:59:59Z"
- *                 userId: "507f1f77bcf86cd799439011"
- *                 usageLimit: 10
- *                 minimumPurchase: 100
  *     responses:
  *       201:
  *         description: Coupon created successfully
- *       400:
- *         description: Validation error or code already exists
- *       403:
- *         description: Admin access required*/
-router.post(
-  '/',
-  adminRoute,
-  validate(createCouponSchema, 'body'),
-  createCoupon
-);
+ */
+router.post('/', adminRoute, validate(createCouponSchema, 'body'), createCoupon);
 
 /**
  * @swagger
@@ -302,10 +142,7 @@ router.post(
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - userIds
- *               - discountPercentage
- *               - expirationDate
+ *             required: [userIds, discountPercentage, expirationDate]
  *             properties:
  *               userIds:
  *                 type: array
@@ -318,17 +155,11 @@ router.post(
  *                 format: date-time
  *               codePrefix:
  *                 type: string
- *                 default: PROMO
  *     responses:
  *       201:
  *         description: Bulk coupons created
  */
-router.post(
-  '/bulk',
-  adminRoute,
-  validate(bulkCouponSchema, 'body'),
-  createBulkCoupons
-);
+router.post('/bulk', adminRoute, validate(bulkCouponSchema, 'body'), createBulkCoupons);
 
 /**
  * @swagger
@@ -338,27 +169,9 @@ router.post(
  *     tags: [Coupons]
  *     security:
  *       - cookieAuth: []
- *     description: Finds all coupons with expiration date in the past and sets isActive to false
  *     responses:
  *       200:
  *         description: Expired coupons deactivated
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: 15 expired coupons deactivated
- *                 count:
- *                   type: number
- *                   example: 15
- *                   description: Number of coupons deactivated
- *       403:
- *         description: Admin access required
  */
 router.post('/cleanup', adminRoute, cleanupExpiredCoupons);
 
@@ -376,27 +189,9 @@ router.post('/cleanup', adminRoute, cleanupExpiredCoupons);
  *         required: true
  *         schema:
  *           type: string
- *           pattern: '^[0-9a-fA-F]{24}$'
- *         description: Coupon MongoDB ObjectId
- *         example: 507f1f77bcf86cd799439011
  *     responses:
  *       200:
  *         description: Coupon deactivated successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: Coupon deactivated successfully
- *       404:
- *         description: Coupon not found
- *       403:
- *         description: Admin access required
  */
 router.patch(
   '/:id/deactivate',
@@ -423,11 +218,6 @@ router.patch(
  *       200:
  *         description: Coupon deleted
  */
-router.delete(
-  '/:id',
-  adminRoute,
-  validate(couponIdSchema, 'params'),
-  deleteCoupon
-);
+router.delete('/:id', adminRoute, validate(couponIdSchema, 'params'), deleteCoupon);
 
 export default router;

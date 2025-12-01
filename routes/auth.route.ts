@@ -227,27 +227,7 @@ router.post('/logout', protectRoute, logout);
  *                   $ref: '#/components/schemas/User'
  *       401:
  *         description: Unauthorized
- *   put:
- *     summary: Update user profile
- *     tags: [Authentication]
- *     security:
- *       - cookieAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               fullName:
- *                 type: string
- *                 example: John Smith
- *     responses:
- *       200:
- *         description: Profile updated successfully
- *       401:
- *         description: Unauthorized
- */
+ */ 
 router.get('/profile', protectRoute, getProfile);
 
 /**
