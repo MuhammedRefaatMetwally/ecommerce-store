@@ -122,6 +122,61 @@ router.post('/signup', validate(signupSchema, 'body'), signup);
  */
 router.post('/login', validate(loginSchema, 'body'), login);
 
+/**
+ * @swagger
+ * /api/auth/refresh-token:
+ *   post:
+ *     summary: Refresh access token using refresh token
+ *     tags: [Authentication]
+ *     description: |
+ *       Generates a new access token using the refresh token stored in cookies.
+ *       The refresh token must be valid and not expired.
+ *       Access token expires in 15 minutes, refresh token expires in 7 days.
+ *     responses:
+ *       200:
+ *         description: Token refreshed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Token refreshed successfully
+ *         headers:
+ *           Set-Cookie:
+ *             description: New access token cookie
+ *             schema:
+ *               type: string
+ *               example: accessToken=eyJhbGc...; Path=/; HttpOnly; SameSite=Strict
+ *       401:
+ *         description: Invalid or expired refresh token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             examples:
+ *               noToken:
+ *                 summary: No refresh token provided
+ *                 value:
+ *                   success: false
+ *                   status: fail
+ *                   message: No refresh token provided
+ *               invalidToken:
+ *                 summary: Invalid refresh token
+ *                 value:
+ *                   success: false
+ *                   status: fail
+ *                   message: Invalid refresh token
+ *               expired:
+ *                 summary: Expired refresh token
+ *                 value:
+ *                   success: false
+ *                   status: fail
+ *                   message: Refresh token expired*/
 router.post('/refresh-token', refreshToken);
 
 /**
@@ -195,6 +250,72 @@ router.post('/logout', protectRoute, logout);
  */
 router.get('/profile', protectRoute, getProfile);
 
+/**
+ * @swagger
+ * /api/auth/profile:
+ *   put:
+ *     summary: Update user profile
+ *     tags: [Authentication]
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             minProperties: 1
+ *             properties:
+ *               fullName:
+ *                 type: string
+ *                 minLength: 2
+ *                 maxLength: 50
+ *                 example: John Smith
+ *                 description: Updated full name (2-50 characters)
+ *           examples:
+ *             update:
+ *               summary: Update name
+ *               value:
+ *                 fullName: "John Smith"
+ *     responses:
+ *       200:
+ *         description: Profile updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Profile updated successfully
+ *                 user:
+ *                   $ref: '#/components/schemas/User'
+ *             example:
+ *               success: true
+ *               message: "Profile updated successfully"
+ *               user:
+ *                 id: "507f1f77bcf86cd799439011"
+ *                 fullName: "John Smith"
+ *                 email: "john@example.com"
+ *                 role: "customer"
+ *       400:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               success: false
+ *               status: fail
+ *               message: Validation failed
+ *               errors:
+ *                 - field: fullName
+ *                   message: Full name must be at least 2 characters
+ *       401:
+ *         description: Unauthorized - No access token*/
 router.put(
   '/profile',
   protectRoute,
