@@ -395,17 +395,6 @@ npm run lint
 - Configure rate limiting
 - Use PM2 or similar for process management
 
-## Known Limitations
-
-- No real-time notifications (WebSockets not implemented)
-- No email service integration
-- No password reset flow
-- No 2FA support
-- No product inventory management
-- No shipping calculations
-- No refund processing
-- Single currency support (USD)
-
 ## API Rate Limits
 
 Not implemented by default. Add `express-rate-limit` for production:
