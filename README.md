@@ -1,6 +1,6 @@
 # E-Commerce API
 
-A complete RESTful API for an e-commerce platform built with Node.js, TypeScript, Express, MongoDB, and Stripe. Features include user authentication, product management, shopping cart, coupon system, payment processing, and business analytics.
+A complete RESTful API for an e-commerce platform built with Node.js, TypeScript, Express, MongoDB, and Stripe. Features include user authentication, product management, shopping cart, coupon system, payment processing, and business analytics with the help of tools like Claude and Code Rabbit.
 
 ## Tech Stack
 
