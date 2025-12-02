@@ -4,15 +4,15 @@ import { IOrderDocument, OrderStatus } from '../types/order.types';
 const orderSchema = new Schema<IOrderDocument>(
   {
     user: {
-      type: Schema.Types.ObjectId,
+      type: mongoose.Types.ObjectId,
       ref: 'User',
       required: [true, 'User is required'],
       index: true,
-    },
+    } as any,
     products: [
       {
         product: {
-          type: Schema.Types.ObjectId,
+          type: mongoose.Types.ObjectId,
           ref: 'Product',
           required: true,
         },
@@ -60,7 +60,7 @@ const orderSchema = new Schema<IOrderDocument>(
   {
     timestamps: true,
     toJSON: {
-      transform: (_doc, ret) => {
+      transform: (_doc: any, ret: any) => {
         ret.id = ret._id;
         delete ret._id;
         delete ret.__v;

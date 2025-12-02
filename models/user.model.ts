@@ -6,31 +6,32 @@ const userSchema = new Schema<IUserDocument>(
   {
     fullName: {
       type: String,
-      required: [true, 'Full name is required'],
+      required: true,
       trim: true,
-      minlength: [2, 'Full name must be at least 2 characters'],
-      maxlength: [50, 'Full name cannot exceed 50 characters'],
+      minlength: 2,
+      maxlength: 50,
     },
+
     email: {
       type: String,
-      required: [true, 'Email is required'],
+      required: true,
       unique: true,
       lowercase: true,
       trim: true,
       index: true,
       validate: {
-        validator: (value: string) => {
-          return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-        },
+        validator: (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
         message: 'Invalid email format',
       },
     },
+
     password: {
       type: String,
-      required: [true, 'Password is required'],
-      minlength: [6, 'Password must be at least 6 characters'],
+      required: true,
+      minlength: 6,
       select: false,
     },
+
     cartItems: [
       {
         product: {
@@ -41,24 +42,22 @@ const userSchema = new Schema<IUserDocument>(
         quantity: {
           type: Number,
           required: true,
-          min: [1, 'Quantity must be at least 1'],
+          min: 1,
           default: 1,
         },
       },
     ],
+
     role: {
       type: String,
-      enum: {
-        values: Object.values(UserRole),
-        message: '{VALUE} is not a valid role',
-      },
+      enum: Object.values(UserRole),
       default: UserRole.CUSTOMER,
     },
   },
   {
     timestamps: true,
     toJSON: {
-      transform: (_doc, ret) => {
+      transform: (_doc: any, ret: any) => {
         ret.id = ret._id;
         delete ret._id;
         delete ret.__v;
@@ -71,29 +70,18 @@ const userSchema = new Schema<IUserDocument>(
 
 userSchema.index({ email: 1 });
 
-userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) {
-    return next();
-  }
+userSchema.pre('save', async function (this: IUserDocument) {
+  if (!this.isModified('password')) return;
 
-  try {
-    const salt = await bcrypt.genSalt(12); // Increased salt rounds for better security
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
-  } catch (error) {
-    next(error as Error);
-  }
+  const salt = await bcrypt.genSalt(12);
+  this.password = await bcrypt.hash(this.password, salt);
 });
 
 userSchema.methods.comparePassword = async function (
+  this: IUserDocument,
   enteredPassword: string
 ): Promise<boolean> {
-  try {
-    return await bcrypt.compare(enteredPassword, this.password);
-  } catch (error) {
-    console.error('Error comparing passwords:', error);
-    return false;
-  }
+  return bcrypt.compare(enteredPassword, this.password);
 };
 
 const User = mongoose.model<IUserDocument>('User', userSchema);

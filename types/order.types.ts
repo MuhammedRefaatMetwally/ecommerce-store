@@ -1,4 +1,4 @@
-import { Document } from 'mongoose';
+import mongoose, { Document } from 'mongoose';
 
 export interface IOrderItem {
   product: string;
@@ -7,7 +7,7 @@ export interface IOrderItem {
 }
 
 export interface IOrder {
-  user: string;
+  user: mongoose.Types.ObjectId | string;
   products: IOrderItem[];
   totalAmount: number;
   stripeSessionId?: string;

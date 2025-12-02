@@ -14,8 +14,10 @@ import { errorHandler, notFound } from './middleware/errorHandler.middleware';
 import { connectDB } from './lib/db';
 import morgan from 'morgan';
 import logger from './utils/logger';
+
 const app: Application = express();
-const PORT = process.env.PORT || 5000;
+const PORT = parseInt(process.env.PORT || '3000', 10);
+const HOST = process.env.HOST || '0.0.0.0'; 
 
 app.use(helmet());
 app.use(
@@ -28,12 +30,11 @@ app.use(
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
-
 app.use(compression());
 
 app.use(
   morgan('combined', {
-    stream: { write: message => logger.info(message.trim()) }, //send morgan logs to winston
+    stream: { write: message => logger.info(message.trim()) },
   })
 );
 
@@ -53,16 +54,15 @@ app.use('/api/payments', paymentsRoutes);
 app.use('/api/analytics', analyticsRoutes);
 
 app.use(notFound);
-
 app.use(errorHandler);
 
 const startServer = async () => {
   try {
     await connectDB();
 
-    app.listen(PORT, () => {
-      console.log(' Server is running on http://localhost:' + PORT);
-      console.log(` Environment: ${process.env.NODE_ENV || 'development'}`);
+    app.listen(PORT, HOST, () => {  
+      console.log(`🚀 Server is running on http://${HOST}:${PORT}`);
+      console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
     });
   } catch (error) {
     console.error('❌ Failed to start server:', error);
