@@ -6,8 +6,8 @@ services:
     container_name: ecommerce-mongodb
     restart: unless-stopped
     environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-password123}
     ports:
       - "27017:27017"
     volumes:
@@ -27,16 +27,16 @@ services:
     container_name: ecommerce-api
     restart: unless-stopped
     ports:
-      - "3000:3000"   # Changed to 3000:3000 for easier access
+      - "3000:3000"   
     env_file:
       - .env
     environment:
       NODE_ENV: production
       PORT: 3000
-      MONGODB_URI: mongodb://admin:password123@mongodb:27017/ecommerce?authSource=admin
+      MONGODB_URI: mongodb://${MONGO_ROOT_USERNAME:-admin}:${MONGO_ROOT_PASSWORD:-password123}@mongodb:27017/ecommerce?authSource=admin
     depends_on:
       mongodb:
-        condition: service_healthy  # Wait for MongoDB to be healthy
+        condition: service_healthy  
     networks:
       - ecommerce-network
     healthcheck:
