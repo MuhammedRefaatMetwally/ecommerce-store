@@ -2,8 +2,7 @@
   "name": "e-commerce",
   "version": "1.0.0",
   "description": "An e-commerce backend with express js",
-  "main": "dist/backend/server.js",
-  "type": "module",
+  "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch server.ts",
     "build": "tsc -p tsconfig.json",

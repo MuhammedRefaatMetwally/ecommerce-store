@@ -15,7 +15,6 @@ export class CartService {
       throw new AppError('User not found', 404);
     }
 
-    // Filter out any items where product no longer exists
     const validCartItems = user.cartItems.filter(
       (item: any) => item.product !== null
     );

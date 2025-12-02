@@ -55,7 +55,7 @@ export interface IAuthResponse {
 
 export enum UserRole {
   CUSTOMER = 'customer',
-  ADMIN = 'admin',
+  ADMIN = 'admin'
 }
 
 export interface IDecodedToken {
@@ -64,10 +64,5 @@ export interface IDecodedToken {
   exp: number;
 }
 
-declare global {
-  namespace Express {
-    interface Request {
-      user?: IUserDocument;
-    }
-  }
-}
+// This makes the file a module
+export {};

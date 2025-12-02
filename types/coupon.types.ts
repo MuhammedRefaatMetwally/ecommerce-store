@@ -1,26 +1,34 @@
-import { Document } from 'mongoose';
+import mongoose, { Document, Types } from 'mongoose';
 
 export interface ICoupon {
   code: string;
   discountPercentage: number;
   expirationDate: Date;
   isActive: boolean;
-  userId: string;
+  userId: Types.ObjectId;
   usageLimit?: number;
   usedCount: number;
   minimumPurchase?: number;
 }
 
-export interface ICouponDocument extends ICoupon, Document {
+export interface ICouponDocument
+  extends Document<unknown, {}, ICoupon>,
+    ICoupon {
   createdAt: Date;
   updatedAt: Date;
+
+  isExpired(): boolean;
+  hasUsesRemaining(): boolean;
+  incrementUsage(): Promise<void>;
+
+  remainingUses?: number;
 }
 
 export interface ICreateCouponDTO {
   code: string;
   discountPercentage: number;
   expirationDate: Date;
-  userId: string;
+  userId: string | Types.ObjectId;
   usageLimit?: number;
   minimumPurchase?: number;
 }

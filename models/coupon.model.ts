@@ -1,4 +1,4 @@
-import mongoose, { Schema } from 'mongoose';
+import mongoose, { Schema, Types } from 'mongoose';
 import { ICouponDocument } from '../types/coupon.types';
 
 const couponSchema = new Schema<ICouponDocument>(
@@ -25,9 +25,9 @@ const couponSchema = new Schema<ICouponDocument>(
     expirationDate: {
       type: Date,
       required: [true, 'Expiration date is required'],
+      // Use a validator that doesn't rely on ambiguous `this` typings.
       validate: {
         validator: function (value: Date) {
-          if (!this.isModified('expirationDate')) return true;
           return value > new Date();
         },
         message: 'Expiration date must be in the future',
@@ -63,7 +63,7 @@ const couponSchema = new Schema<ICouponDocument>(
   {
     timestamps: true,
     toJSON: {
-      transform: (_doc, ret) => {
+      transform: (_doc: any, ret: any) => {
         ret.id = ret._id;
         delete ret._id;
         delete ret.__v;
@@ -76,24 +76,24 @@ const couponSchema = new Schema<ICouponDocument>(
 couponSchema.index({ userId: 1, isActive: 1 });
 couponSchema.index({ code: 1, isActive: 1 });
 
-couponSchema.virtual('remainingUses').get(function () {
-  if (!this.usageLimit) return Infinity;
-  return Math.max(0, this.usageLimit - this.usedCount);
+couponSchema.virtual('remainingUses').get(function (this: ICouponDocument) {
+  if (this.usageLimit == null) return Infinity;
+  return Math.max(0, (this.usageLimit || 0) - (this.usedCount || 0));
 });
 
-couponSchema.methods.isExpired = function (): boolean {
-  return this.expirationDate < new Date();
+couponSchema.methods.isExpired = function (this: ICouponDocument): boolean {
+  return !!this.expirationDate && this.expirationDate < new Date();
 };
 
-couponSchema.methods.hasUsesRemaining = function (): boolean {
-  if (!this.usageLimit) return true;
-  return this.usedCount < this.usageLimit;
+couponSchema.methods.hasUsesRemaining = function (this: ICouponDocument): boolean {
+  if (this.usageLimit == null) return true;
+  return (this.usedCount || 0) < (this.usageLimit || 0);
 };
 
-couponSchema.methods.incrementUsage = async function (): Promise<void> {
-  this.usedCount += 1;
+couponSchema.methods.incrementUsage = async function (this: ICouponDocument): Promise<void> {
+  this.usedCount = (this.usedCount || 0) + 1;
 
-  if (this.usageLimit && this.usedCount >= this.usageLimit) {
+  if (this.usageLimit != null && this.usedCount >= this.usageLimit) {
     this.isActive = false;
   }
 

@@ -57,7 +57,7 @@ const productSchema = new Schema<IProductDocument>(
   {
     timestamps: true,
     toJSON: {
-      transform: (_doc, ret) => {
+      transform: (_doc:any, ret:any) => {
         ret.id = ret._id;
         delete ret._id;
         delete ret.__v;
@@ -67,12 +67,10 @@ const productSchema = new Schema<IProductDocument>(
   }
 );
 
-// Indexes for better query performance
 productSchema.index({ category: 1, isFeatured: 1 });
 productSchema.index({ price: 1 });
 productSchema.index({ createdAt: -1 });
 
-// Virtual for formatted price not in the database
 productSchema.virtual('formattedPrice').get(function () {
   return `$${this.price.toFixed(2)}`;
 });
