@@ -33,8 +33,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3000
-      MONGODB_URI: mongodb://${MONGO_ROOT_USERNAME:-admin}:${MONGO_ROOT_PASSWORD:-password123}@mongodb:27017/ecommerce?authSource=admin
-    depends_on:
+      MONGODB_URI: mongodb+srv://13abbycrow_db_user:FOKs4SFUJcSzCiVy@cluster-ecommerce.ftfb2z0.mongodb.net/?appName=Cluster-ecommerce
       mongodb:
         condition: service_healthy  
     networks:
