@@ -16,6 +16,7 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 .env.*.local
+docker-compose.yml
 
 # ================================
 # Build Outputs & Runtime
