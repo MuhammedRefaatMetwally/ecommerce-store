@@ -16,7 +16,7 @@ import morgan from 'morgan';
 import logger from './utils/logger';
 
 const app: Application = express();
-const PORT = parseInt(process.env.PORT || '3000', 10);
+const PORT = parseInt(process.env.PORT || '5000', 10);
 const HOST = process.env.HOST || '0.0.0.0'; 
 
 app.use(helmet());
